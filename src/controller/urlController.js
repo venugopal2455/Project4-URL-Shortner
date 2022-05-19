@@ -2,7 +2,7 @@ const urlModel = require("../models/urlModel");
 const { isValid, isValidReqBody, isValidURL, generateCode } = require('../validator/validation')
 const { SET_ASYNC, GET_ASYNC } = require('../redis/redisConnection');
 
-// =========================================postUrl=======================================================
+// =========================================shortUrl=======================================================
 const shortUrl = async function (req, res) {
 
     try {
@@ -29,7 +29,7 @@ const shortUrl = async function (req, res) {
 
         const isPresentUrl = await urlModel.findOne({ longUrl: longUrl }).select({ __v: 0, createdAt: 0, updatedAt: 0, _id: 0 })
         if (isPresentUrl) {
-            return res.status(200).send({ status: true, msg: 'From dDatabase', data: isPresentUrl });
+            return res.status(200).send({ status: true, msg: 'From Database', data: isPresentUrl });
         }
 
         const urlCode = generateCode(7).trim().toLowerCase();
@@ -41,6 +41,7 @@ const shortUrl = async function (req, res) {
 
 
         await SET_ASYNC(`${filteredData.longUrl}`, JSON.stringify(filteredData))
+        await SET_ASYNC(`${filteredData.urlCode}`, filteredData.longUrl)
 
         res.status(201).send({ status: true, data: filteredData })
 
@@ -61,10 +62,10 @@ const getUrl = async function (req, res) {
             return res.status(400).send({ status: false, message: "Only 7 digits or letters urlCode is allowed!" });
         }
 
-        const OriginalUrlInCache = await GET_ASYNC(`${urlCode}`);
-        if (OriginalUrlInCache) {
+        const longUrlInCache = await GET_ASYNC(`${urlCode}`);
+        if (longUrlInCache) {
             console.log('FromRedis')
-            return res.status(302).redirect(OriginalUrlInCache);
+            return res.status(302).redirect(longUrlInCache);
         }
 
         const foundedUrl = await urlModel.findOne({ urlCode: urlCode })
@@ -74,11 +75,9 @@ const getUrl = async function (req, res) {
 
         console.log('FromDatabase')
 
-        const OriginalUrl = foundedUrl.longUrl;
-
         await SET_ASYNC(`${foundedUrl.urlCode}`, foundedUrl.longUrl)
 
-        return res.status(302).redirect(OriginalUrl)
+        return res.status(302).redirect(foundedUrl.longUrl)
 
     } catch (err) {
         return res.status(500).send({ status: false, error: err.message })

@@ -24,12 +24,12 @@ const shortUrl = async function (req, res) {
 
         const FoundedDataInCache = await GET_ASYNC(`${longUrl}`)
         if (FoundedDataInCache) {
-            return res.status(200).send({ status: true, msg: 'From Radis', data: JSON.parse(FoundedDataInCache) })
+            return res.status(201).send({ status: true, msg: 'From Radis', data: JSON.parse(FoundedDataInCache) })
         }
 
         const isPresentUrl = await urlModel.findOne({ longUrl: longUrl }).select({ __v: 0, createdAt: 0, updatedAt: 0, _id: 0 })
         if (isPresentUrl) {
-            return res.status(200).send({ status: true, msg: 'From Database', data: isPresentUrl });
+            return res.status(201).send({ status: true, msg: 'From Database', data: isPresentUrl });
         }
 
         const urlCode = generateCode(7).trim().toLowerCase();

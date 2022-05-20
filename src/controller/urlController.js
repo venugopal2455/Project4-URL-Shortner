@@ -59,7 +59,7 @@ const getUrl = async function (req, res) {
 
         const urlCode = req.params.urlCode;
         if (urlCode.length != 7) {
-            return res.status(400).send({ status: false, message: "Only 7 digits or letters urlCode is allowed!" });
+            return res.status(404).send({ status: false, message: "Url not found" });
         }
 
         const longUrlInCache = await GET_ASYNC(`${urlCode}`);
